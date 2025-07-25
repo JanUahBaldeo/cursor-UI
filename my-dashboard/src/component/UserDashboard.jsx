@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from './Header';
-import CalendarSection from './CalendarSection';
+import CalendarSection from './calendar/CalendarSection';
 import { useUser } from '../context/UserContext';
 
 const UserDashboard = () => {

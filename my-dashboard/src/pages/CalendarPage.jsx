@@ -1,5 +1,5 @@
 // src/pages/CalendarPage.jsx
-import CalendarSection from '../component/CalendarSection';
+import CalendarSection from '../component/calendar/CalendarSection';
 
 export default function CalendarPage() {
   return (

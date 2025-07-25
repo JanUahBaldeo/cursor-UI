@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Header from '../component/Header';
-import AdminDashboard from './component/admin/AdminDashboard';
 import { useUser } from '../context/UserContext';
 import { motion } from 'framer-motion';
 
@@ -36,7 +35,9 @@ const AdminDashboardPage = () => {
 
       {/* 🧩 Admin Dashboard Content */}
       <main className="max-w-7xl mx-auto px-6 py-6 space-y-10">
-        <AdminDashboard />
+        <div className="text-center text-lg text-gray-600 dark:text-gray-300 py-20">
+          The admin dashboard has been modularized. Please use the main dashboard sections for admin features.
+        </div>
       </main>
     </div>
   );

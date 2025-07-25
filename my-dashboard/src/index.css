@@ -16,7 +16,7 @@ body {
 
 /* Metric Card Variants */
 .metric-card {
-  @apply rounded-2xl p-4 shadow-md bg-white dark:bg-gray-800 dark:text-white transition-all;
+  @apply rounded-2xl p-1 shadow-md bg-white dark:bg-gray-800 dark:text-white transition-all;
 }
 .metric-card.mint {
   @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-600 dark:text-white;
@@ -86,6 +86,11 @@ body {
   .chart-container {
     @apply w-full h-80 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4;
   }
+
+  /* 🧩 FIXED: Reduced pipeline column gap */
+  .pipeline-columns-wrapper {
+    @apply flex gap-2 min-w-fit pl-2 sm:pl-3 xl:pl-4;
+  }
 }
 
 /* Animations */
@@ -148,13 +153,5 @@ body {
 }
 
 .react-select__option {
-  @apply text-black dark:text-white bg-white dark:bg-gray-900 cursor-pointer transition-colors duration-200;
-}
-
-.react-select__option--is-focused {
-  @apply bg-gray-100 dark:bg-gray-700;
-}
-
-.react-select__option--is-selected {
-  @apply bg-teal-500 text-white;
+  @apply text-black dark:text-white bg-white dark:bg-gray-900 cursor-pointer transition-colors;
 }

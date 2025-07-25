@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { supabase } from '../supabase';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -7,15 +6,8 @@ const ForgotPasswordPage = () => {
 
   const handleReset = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      setSent(true);
-    }
+    // Mock: just show success
+    setSent(true);
   };
 
   return (

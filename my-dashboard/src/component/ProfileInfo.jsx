@@ -1,18 +1,14 @@
-// src/component/ProfileInfo.jsx
 import { useState, useRef, useEffect } from 'react';
-import { useTheme } from '../hooks/useTheme';
-import { useUser } from '../context/UserContext'; // ✅ improved usage
+import { useUser } from '../context/UserContext';
 
 const ProfileInfo = () => {
-  const { user, logout } = useUser();                      // 🎯 full context access
-  const { isDark, toggleTheme } = useTheme();              // 🌓 theme hook
+  const { user, logout } = useUser();
   const [open, setOpen] = useState(false);
-  const menuRef = useRef(null);                            // 🪄 click-outside tracker
+  const menuRef = useRef(null);
 
-  // ⛔ fallback if user not logged in
   if (!user) return null;
 
-  /* ─── Close dropdown on outside click ───────────── */
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -25,7 +21,7 @@ const ProfileInfo = () => {
 
   return (
     <div className="relative flex items-center gap-4" ref={menuRef}>
-      {/* 👤 Name and Tier */}
+      {/* Name and Tier */}
       <div
         className="text-right leading-tight cursor-pointer select-none"
         onClick={() => setOpen(!open)}
@@ -36,36 +32,26 @@ const ProfileInfo = () => {
           {user.name}
         </span>
         <span className="inline-block text-sm sm:text-base text-teal-100 font-light">
-          {user.tier || 'Member'} ⌄
+          {user.tier || 'Member'} ▼
         </span>
       </div>
-
-      {/* 📷 Avatar */}
+      {/* Avatar */}
       <img
         src={user.avatar}
         alt={`${user.name} avatar`}
         className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover border-2 border-white shadow-md hover:scale-105 transition"
         onClick={() => setOpen(!open)}
       />
-
-      {/* 📋 Dropdown */}
+      {/* Dropdown */}
       {open && (
         <ul
-          className="absolute top-full right-0 mt-3 w-52 bg-white dark:bg-gray-800
-                     text-gray-800 dark:text-gray-100 rounded-xl shadow-xl z-50
-                     text-sm overflow-hidden animate-fade-in"
+          className="absolute top-full right-0 mt-3 w-52 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-xl shadow-xl z-50 text-sm overflow-hidden animate-fade-in"
         >
           <li className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
             👤 View Profile
           </li>
           <li className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
             ⚙️ Settings
-          </li>
-          <li
-            className="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center gap-2"
-            onClick={toggleTheme}
-          >
-            🌓 {isDark ? 'Light Mode' : 'Dark Mode'}
           </li>
           <li
             className="px-4 py-3 hover:bg-red-100 dark:hover:bg-red-700 text-red-600 dark:text-red-300 cursor-pointer"
@@ -79,4 +65,4 @@ const ProfileInfo = () => {
   );
 };
 
-export default ProfileInfo;
+export default ProfileInfo; 

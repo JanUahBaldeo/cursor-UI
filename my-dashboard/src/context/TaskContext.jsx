@@ -1,93 +1,103 @@
-// src/context/TaskContext.jsx
 import { createContext, useEffect, useState } from 'react';
 
 export const TaskContext = createContext();
 
-const LOCAL_STORAGE_KEY = 'task_data';
+const categorizeTasks = (tasks) => {
+  const result = {
+    "Today's Tasks": { color: 'teal', items: [] },
+    'Overdue Tasks': { color: 'orange', items: [] },
+    'Upcoming in 48 Hours': { color: 'blue', items: [] },
+  };
 
-const defaultTasks = {
-  "Today's Tasks": {
-    color: 'teal',
-    items: [
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const twoDaysLater = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+
+  tasks.forEach((task) => {
+    const taskDateStr = task.dueDate;
+    if (!taskDateStr) return;
+
+    const taskDate = new Date(taskDateStr);
+    const formattedDate = taskDate.toISOString().split('T')[0];
+
+    const taskItem = {
+      id: task._id,
+      title: task.title,
+      date: formattedDate,
+      tags: task.tags || [],
+      actions: task.body,
+    };
+    if (formattedDate === today) {
+      result["Today's Tasks"].items.push(taskItem);
+    } else if (taskDate < now) {
+      result['Overdue Tasks'].items.push(taskItem);
+    } else if (taskDate <= twoDaysLater) {
+      result['Upcoming in 48 Hours'].items.push(taskItem);
+    }
+  });
+
+  return result;
+};
+
+const fetchAndTransformTasks = async () => {
+  try {
+    const response = await fetch(
+      'https://services.leadconnectorhq.com/locations/b7vHWUGVUNQGoIlAXabY/tasks/search',
       {
-        id: 1,
-        title: 'Lorem ipsum',
-        date: '2024-07-01',
-        tags: ['High priority', 'Meeting'],
-        actions: ['Reassign', 'Meeting'],
-      },
-      {
-        id: 2,
-        title: 'Lorem ipsum',
-        date: '2024-07-02',
-        tags: ['Low priority'],
-        actions: ['Reassign', 'Call'],
-      },
-    ],
-  },
-  'Overdue Tasks': {
-    color: 'orange',
-    items: [
-      {
-        id: 3,
-        title: 'Lorem ipsum',
-        date: '2024-06-20',
-        tags: ['High priority', 'Meeting'],
-        actions: ['Reassign', 'Meeting'],
-      },
-      {
-        id: 4,
-        title: 'Lorem ipsum',
-        date: '2024-06-18',
-        tags: ['High priority'],
-        actions: ['Completed', 'Call'],
-      },
-    ],
-  },
-  'Upcoming in 48 Hours': {
-    color: 'blue',
-    items: [
-      {
-        id: 5,
-        title: 'Lorem ipsum',
-        date: '2024-06-28',
-        tags: ['High priority', 'Meeting'],
-        actions: ['Snooze', 'Schedule Now'],
-      },
-      {
-        id: 6,
-        title: 'Lorem ipsum',
-        date: '2024-06-29',
-        tags: ['Low priority'],
-        actions: ['Reassign', 'Call'],
-      },
-    ],
-  },
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer pit-1dd731f9-e51f-40f7-bf4e-9e8cd31ed75f',
+          'Content-Type': 'application/json',
+          Version: '2021-07-28',
+        },
+        body: JSON.stringify({ completed: false }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('HTTP error! Status: ${response.status}');
+    }
+
+    const data = await response.json();
+    const tasks = data.tasks || data;
+    
+    return categorizeTasks(tasks);
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    return {
+      "Today's Tasks": { color: 'teal', items: [] },
+      'Overdue Tasks': { color: 'orange', items: [] },
+      'Upcoming in 48 Hours': { color: 'blue', items: [] },
+    };
+  }
 };
 
 export const TaskProvider = ({ children }) => {
-  const [tasksByCategory, setTasksByCategory] = useState(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : defaultTasks;
-  });
+  const [tasksByCategory, setTasksByCategory] = useState(null);
 
-  // Save tasks to localStorage on change
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tasksByCategory));
-  }, [tasksByCategory]);
+    fetchAndTransformTasks().then((data) => {
+      console.log(data)
+      setTasksByCategory(data);
+    });
+  }, []);
 
-  // Add task to a category
   const addTask = (category, task) => {
+    const newTask = {
+      ...task,
+      id: task.id || '${Date.now()}',
+    };
+
     setTasksByCategory((prev) => ({
       ...prev,
       [category]: {
         ...prev[category],
-        items: [...prev[category].items, task],
+        items: [...prev[category].items, newTask],
       },
     }));
   };
 
-  // Update a task by ID (search all categories)
   const updateTask = (updatedTask) => {
     setTasksByCategory((prev) => {
       const newState = {};
@@ -103,7 +113,6 @@ export const TaskProvider = ({ children }) => {
     });
   };
 
-  // Delete task from all categories
   const deleteTask = (taskId) => {
     setTasksByCategory((prev) => {
       const newState = {};
@@ -117,7 +126,6 @@ export const TaskProvider = ({ children }) => {
     });
   };
 
-  // Optional: reorder tasks in a category
   const reorderTasks = (category, newItemOrder) => {
     setTasksByCategory((prev) => ({
       ...prev,
@@ -128,6 +136,25 @@ export const TaskProvider = ({ children }) => {
     }));
   };
 
+  const moveTaskToCategory = (fromCategory, toCategory, taskId) => {
+    setTasksByCategory((prev) => {
+      const taskToMove = prev[fromCategory].items.find((t) => t.id === taskId);
+      if (!taskToMove) return prev;
+
+      return {
+        ...prev,
+        [fromCategory]: {
+          ...prev[fromCategory],
+          items: prev[fromCategory].items.filter((t) => t.id !== taskId),
+        },
+        [toCategory]: {
+          ...prev[toCategory],
+          items: [...prev[toCategory].items, taskToMove],
+        },
+      };
+    });
+  };
+
   return (
     <TaskContext.Provider
       value={{
@@ -136,7 +163,8 @@ export const TaskProvider = ({ children }) => {
         addTask,
         updateTask,
         deleteTask,
-        reorderTasks, // future use
+        reorderTasks,
+        moveTaskToCategory,
       }}
     >
       {children}

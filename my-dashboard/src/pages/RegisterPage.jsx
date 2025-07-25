@@ -1,12 +1,11 @@
 import { useState } from 'react'; 
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
 import { useUser } from '../context/UserContext';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('User'); // ✅ Include new role
+  const [role, setRole] = useState('User');
   const { setUser } = useUser();
   const navigate = useNavigate();
   const [error, setError] = useState('');
@@ -15,35 +14,25 @@ const RegisterPage = () => {
     e.preventDefault();
     setError('');
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    // Mock registration: just set user in localStorage and context
+    const userId = Date.now();
+    const userData = {
+      id: userId,
+      email,
+      name: 'New User',
+      avatar: 'https://i.ibb.co/rK44TsnC/logo.png',
+      tier: role,
+    };
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('userRole', role);
 
-    if (error) {
-      setError(error.message);
-      return;
-    }
-
-    const session = await supabase.auth.getSession();
-    const userId = session.data.session?.user?.id;
-
-    if (userId) {
-      const userData = {
-        id: userId,
-        email: data.user.email,
-        name: 'New User',
-        avatar: 'https://i.ibb.co/rK44TsnC/logo.png',
-        tier: role,
-      };
-
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      if (role === 'Admin') {
-        navigate('/admin');
-      } else if (role === 'Production Partner') {
-        navigate(`/partner-dashboard/${userId}`);
-      } else {
-        navigate(`/user-dashboard/${userId}`);
-      }
+    if (role === 'Admin') {
+      navigate('/admin');
+    } else if (role === 'Production Partner') {
+      navigate(`/partner-dashboard/${userId}`);
+    } else {
+      navigate(`/user-dashboard/${userId}`);
     }
   };
 
@@ -89,7 +78,6 @@ const RegisterPage = () => {
           required
         />
 
-        {/* ✅ Updated Role Dropdown */}
         <label htmlFor="reg-role" className="block text-sm text-gray-700 dark:text-gray-200">
           Role
         </label>
@@ -101,7 +89,7 @@ const RegisterPage = () => {
         >
           <option value="User">User</option>
           <option value="Admin">Admin</option>
-          <option value="Production Partner">Production Partner</option> {/* ✅ New Role Added */}
+          <option value="Production Partner">Production Partner</option>
         </select>
 
         <button

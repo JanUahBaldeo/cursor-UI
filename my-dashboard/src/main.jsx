@@ -5,9 +5,9 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 
-import { UserProvider } from './context/UserContext';   // ✅ Vite-safe context
+import { UserProvider } from './context/UserContext';
 import { TaskProvider } from './context/TaskContext';
-// import { ThemeProvider } from './hooks/useTheme';    // Optional if using ThemeContext
+// import { ThemeProvider } from './hooks/useTheme'; // Optional if using dark/light toggle
 
 const Root = () => (
   <React.StrictMode>
@@ -15,7 +15,7 @@ const Root = () => (
       <UserProvider>
         <TaskProvider>
           {/* <ThemeProvider> */}
-            <App />
+          <App />
           {/* </ThemeProvider> */}
         </TaskProvider>
       </UserProvider>
@@ -23,4 +23,10 @@ const Root = () => (
   </React.StrictMode>
 );
 
-ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
+// ✅ Prevent duplicate createRoot() on hot reload
+const container = document.getElementById('root');
+if (!container._root) {
+  const root = ReactDOM.createRoot(container);
+  container._root = root;
+  root.render(<Root />);
+}
